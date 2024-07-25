@@ -1,5 +1,10 @@
 const routes = [
   {
+    path: "/",
+    name: "three",
+    component: () => import("_v/Three/index.vue"),
+  },
+  {
     path: "/login",
     name: "login",
     component: () => import("_v/Login/index.vue"),
@@ -8,7 +13,7 @@ const routes = [
     },
   },
   {
-    path: "/",
+    path: "/home",
     name: "layout",
     redirect: "/home",
     component: () => import("_v/Layout/index.vue"),
