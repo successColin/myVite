@@ -21,10 +21,10 @@ onMounted(() => {
   if (WebGL.isWebGL2Available()) {
     initThree();
     initMeshes();
-    initControls();
     initLight();
     enableShadow();
     animate();
+    initControls();
 
     window.addEventListener("resize", onWindowResize);
   } else {

@@ -85,14 +85,14 @@ export function useThree(sceneContainer) {
     const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444);
     scene.add(hemiLight);
 
-    // dirLight = new THREE.DirectionalLight(0xffffff);
-    // dirLight.position.set(-3, 10, -10);
-    // scene.add(dirLight);
+    dirLight = new THREE.DirectionalLight(0xffffff);
+    dirLight.position.set(-3, 10, -10);
+    scene.add(dirLight);
   };
 
   const enableShadow = () => {
     renderer.shadowMap.enabled = true;
-    // dirLight.castShadow = true;
+    dirLight.castShadow = true;
     plane.receiveShadow = true;
   };
 
