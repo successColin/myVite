@@ -5,6 +5,11 @@ const routes = [
     component: () => import("_v/Three/index.vue"),
   },
   {
+    path: "/demo2",
+    name: "demo2",
+    component: () => import("_v/Three/index2.vue"),
+  },
+  {
     path: "/login",
     name: "login",
     component: () => import("_v/Login/index.vue"),
