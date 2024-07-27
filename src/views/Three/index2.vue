@@ -3,14 +3,26 @@
 </template>
 
 <script setup>
+// 辅助工具
+// AxesHelper
+// lil-gui
+// GridHelper
+// OrbitControls
+
+// 阴影：渲染器、模型、地板
+
+
 import * as THREE from "three";
 
 import TWEEN from "@tweenjs/tween.js";
 import {
+  AmbientLight,
+  // BoxGeometry,
   CylinderGeometry,
   DoubleSide,
   GridHelper,
   Mesh,
+  // MeshBasicMaterial,
   MeshPhysicalMaterial,
   PerspectiveCamera,
   PlaneGeometry,
@@ -20,13 +32,14 @@ import {
   SpotLight,
   TextureLoader,
   Vector2,
-  WebGLRenderer,
+  WebGLRenderer
 } from "three";
 import WebGL from "three/addons/capabilities/WebGL.js";
-import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { OrbitControls } from "three/examples/jsm/Addons.js";
 import { RectAreaLightHelper } from "three/examples/jsm/helpers/RectAreaLightHelper";
-import { GUI } from "three/examples/jsm/libs/lil-gui.module.min.js";
+// import { GUI } from "three/examples/jsm/libs/lil-gui.module.min.js";
+import GUI from 'lil-gui';
 import { RectAreaLightUniformsLib } from "three/examples/jsm/lights/RectAreaLightUniformsLib.js";
 
 const sceneContainer = ref(null);
@@ -34,6 +47,10 @@ let scene, camera, renderer;
 let controls;
 let carStatus;
 let doors = [];
+let tweenCarDoor;
+let tweenCarChange;
+// let tweenVal;
+// let mesh;
 // 车身材质
 let bodyMaterial = new THREE.MeshPhysicalMaterial({
   color: "#6e2121",
@@ -62,6 +79,8 @@ onMounted(() => {
     initGUI();
     initControls();
     animate();
+
+    
 
     window.addEventListener("resize", onWindowResize);
     window.addEventListener("click", onPointClick);
@@ -100,12 +119,34 @@ function initThree() {
   // 默认 THREE.LinearEncoding 可以改善颜色的显示，使其更加符合人眼的感知
   renderer.outputEncoding = THREE.sRGBEncoding;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  // 支持阴影
+  renderer.shadowMap.enabled = true;
   sceneContainer.value.appendChild(renderer.domElement);
 }
 
 const initMeshes = () => {
+  // const geometryBox = new BoxGeometry(1, 1, 1);
+  // const texture = new TextureLoader().load('public/static/img/messi.JPG');
+  // const material = new MeshBasicMaterial({
+  //   color: "red",
+  //   map: texture
+  // })
+  // mesh = new Mesh(geometryBox, material)
+  // scene.add(mesh)
+
+
+  // const coords = { x: 0, y: 0 }
+  // tweenVal = new TWEEN.Tween(coords).to({ x: 3, y: 3 }, 4000)
+  //   .easing(TWEEN.Easing.Quadratic.Out)
+  //   .onUpdate((v) => {
+  //     console.log('v========>>>>', v)
+  //     mesh.position.x = v.x;
+  //     mesh.position.y = v.y;
+  //   }).start();
+
   new GLTFLoader().load("public/models/gltf/Lamborghini.glb", function (gltf) {
     const carModel = gltf.scene;
+    console.log(gltf);
     carModel.rotation.y = Math.PI;
     if (carModel) {
       carModel.traverse((obj) => {
@@ -122,6 +163,7 @@ const initMeshes = () => {
         } else if (obj.name === "Empty001_16" || obj.name === "Empty002_20") {
           // 门
           doors.push(obj);
+          console.log(obj);
         } else {
         }
         obj.castShadow = true;
@@ -134,8 +176,10 @@ const initMeshes = () => {
 
   const floorGeometry = new PlaneGeometry(20, 20);
   const materialOne = new MeshPhysicalMaterial({
+    // 双面绘制
     side: DoubleSide,
     color: 0x808080,
+    // 金属度
     metalness: 0,
     roughness: 0.1,
   });
@@ -154,7 +198,8 @@ const initMeshes = () => {
 };
 
 const initLight = () => {
-  const ambientLight = new THREE.AmbientLight("#fff", 0.5);
+  // 环境光
+  const ambientLight = new AmbientLight("#fff", 0.5);
   ambientLight.position.set(-3, 10, -10);
   scene.add(ambientLight);
 
@@ -165,13 +210,13 @@ const initLight = () => {
   bigSpotLight.decay = 2; // 纵向：沿着光照距离的衰减量。
   bigSpotLight.distance = 30;
   bigSpotLight.shadow.radius = 10;
-  // 阴影映射宽度，阴影映射高度
+  // // 阴影映射宽度，阴影映射高度
   bigSpotLight.shadow.mapSize.set(4096, 4096);
   bigSpotLight.position.set(-5, 10, 1);
-  // 光照射的方向
+  // // 光照射的方向
   bigSpotLight.target.position.set(0, 0, 0);
   bigSpotLight.castShadow = true;
-  // bigSpotLight.map = bigTexture
+  // // bigSpotLight.map = bigTexture
   scene.add(bigSpotLight);
 
   const spotLight = new THREE.SpotLight("#ffffff", 2);
@@ -245,9 +290,13 @@ const initLight = () => {
 };
 
 const animate = (time) => {
+  // mesh.position.x += 0.01;
   requestAnimationFrame(animate);
   renderer.render(scene, camera);
   TWEEN.update(time);
+  // tweenVal.update(time)
+  tweenCarDoor && tweenCarDoor.update(time);
+  tweenCarChange && tweenCarChange.update(time);
   controls.update();
 };
 
@@ -262,6 +311,7 @@ function initControls() {
   // 辅助线 x: 红色  y：绿色  z：蓝色
   const axesHelper = new THREE.AxesHelper(1);
   scene.add(axesHelper);
+
 
   let grid = new GridHelper(20, 40, "red", 0xffffff);
   grid.material.opacity = 0.2;
@@ -332,25 +382,27 @@ function carOut() {
   );
 }
 function setAnimationDoor(start, end, mesh) {
-  const tween = new TWEEN.Tween(start)
+  tweenCarDoor = new TWEEN.Tween(start)
     .to(end, 1000)
     .easing(TWEEN.Easing.Quadratic.Out);
-  tween.onUpdate((that) => {
+  console.log(11111111111, start, end, mesh, tweenCarDoor);
+  tweenCarDoor.onUpdate((that) => {
+    console.log(that)
     mesh.rotation.x = that.x;
   });
-  tween.start();
+  tweenCarDoor.start();
 }
 
 function setAnimationCamera(start, end) {
-  const tween = new TWEEN.Tween(start)
+  tweenCarChange = new TWEEN.Tween(start)
     .to(end, 3000)
     .easing(TWEEN.Easing.Quadratic.Out);
-  tween.onUpdate((that) => {
+  tweenCarChange.onUpdate((that) => {
     //  camera.postition  和 controls.target 一起使用
     camera.position.set(that.cx, that.cy, that.cz);
     controls.target.set(that.ox, that.oy, that.oz);
   });
-  tween.start();
+  tweenCarChange.start();
 }
 
 function onPointClick(event) {
@@ -359,6 +411,7 @@ function onPointClick(event) {
   pointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
   var vector = new Vector2(pointer.x, pointer.y);
+  // 光线投射类
   var raycaster = new Raycaster();
   raycaster.setFromCamera(vector, camera);
   let intersects = raycaster.intersectObjects(scene.children);
@@ -384,6 +437,7 @@ function onPointClick(event) {
   justify-content: center;
   align-items: center;
 }
+
 .content {
   position: absolute;
   top: 0;
@@ -391,6 +445,7 @@ function onPointClick(event) {
   width: 100%;
   height: 100vh;
   z-index: 9;
+
   &__box {
     position: absolute;
     bottom: 100px;

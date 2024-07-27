@@ -1,8 +1,8 @@
 // 导入router所需的方法
-import { createRouter, createWebHistory } from "vue-router";
+import { createRouter, createWebHistory } from 'vue-router';
 
 // 导入路由页面的配置
-import routes from "./Routers/index";
+import routes from './Routers/index';
 
 // 路由参数配置
 const router = createRouter({
@@ -13,7 +13,7 @@ const router = createRouter({
 
 // 全局前置守卫，这里可以加入用户登录判断
 router.beforeEach((to, from, next) => {
-  console.log("beforeEach====>>>", to, from);
+  // console.log("beforeEach====>>>", to, from);
   // 继续前进 next()
   // 返回 false 以取消导航
   next();
@@ -21,7 +21,7 @@ router.beforeEach((to, from, next) => {
 
 // 全局后置钩子，这里可以加入改变页面标题等操作
 router.afterEach((to, from) => {
-  console.log("afterEach", to, from);
+  // console.log("afterEach", to, from);
   const _title = to.meta.title;
   if (_title) {
     window.document.title = _title;
