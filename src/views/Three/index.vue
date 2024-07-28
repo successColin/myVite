@@ -22,7 +22,7 @@ let dirLightHelper;
 let mixer;
 let clock = new THREE.Clock();
 let gui = new GUI();
-let isShow = ref(true);
+let isShow = ref(false);
 
 function handleClick() {
   isShow.value = false;
